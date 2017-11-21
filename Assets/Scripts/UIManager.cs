@@ -62,7 +62,7 @@ public class UIManager : MonoBehaviour {
     {
         Color color = (_canChange) ? Color.green : Color.red;     
         CursorRenderer.color = color;
-        Debug.Log(color);
+
         while(CursorRenderer.color != Color.white)
         {
             CursorRenderer.color = Color.Lerp(CursorRenderer.color, Color.white, Time.deltaTime);

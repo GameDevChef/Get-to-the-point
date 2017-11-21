@@ -129,15 +129,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea03b885105c2e7498ac702b515dc2d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxStoppingTime: 5
+  MaxStoppingTime: 10
   TimeToExplode: 0.5
   MaxDigDownTime: 10
-  DigDownRadius: 0
+  DigDownRadius: 5
+  MaxFillTime: 10
+  FillSpawnInterval: 0.1
+  MaxDigForwardTime: 10
+  DigForwardRadius: 5
+  MaxBuildTime: 20
+  BuildLength: 5
   MaxLerpSpeed: 1
   FallSpeedPrc: 0.5
   WalkSpeedPrc: 0.2
   UmbrellFallSpeedSpeedPrc: 0.25
   DigDownSpeedPrc: 0.1
+  DigForwardSpeedPrc: 0.1
+  BuildSpeedPrc: 0.02
   Renderer: {fileID: 212470123493158466}
   CurrentAbility: 0
 --- !u!212 &212470123493158466

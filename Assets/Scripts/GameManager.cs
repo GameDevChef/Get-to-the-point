@@ -4,12 +4,29 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
+public class FillNode
+{
+    public int x;
+    public int y;
+    public int timesNotMoved;
+}
+
+[System.Serializable]
 public class Node
 {
     public int x;
     public int y;
     public bool isEmpty;
-    public bool isStopped;
+    public bool isStoppedLeft;
+    public bool isStoppedRight;
+    
+}
+
+public enum GAME_STATE
+{
+    PLAY,
+    INIT,
+    EDIT
 }
 
 public class GameManager : MonoBehaviour {
@@ -24,11 +41,12 @@ public class GameManager : MonoBehaviour {
     Texture2D m_levelTextureInstance;
 
     public Color emptyColor;
+    public Color bridgeColor;
 
     int m_maxX;
     int m_maxY;
 
-    public float pixelsPerUnit = 100f;
+    public float UnitPerPixel = 0.01f;
 
     public Vector3 MousePosition;
     Node m_currentNode;
@@ -48,27 +66,57 @@ public class GameManager : MonoBehaviour {
 
     private List<Node> m_nodesToClear = new List<Node>();
 
+    private List<Node> m_nodesBridgeToAdd = new List<Node>();
+
     private UIButton m_currentUIButton;
 
     public Color presseColor;
 
     public Color unpressedColor;
 
+    public float FillInterval;
+
+    private float m_fillTimer;
+
+    public Color fillColor;
+
+    private LevelEditor m_levelEditor;
+
+    private List<FillNode> m_fillNodes = new List<FillNode>();
+    private bool m_applyTexture;
+
+    public GAME_STATE GameState;
+
+    public GameObject PlayCanvasObj;
+
+    public GameObject EditCanvasObj;
+
+    public GameObject InitCanvasObj;
+
     private void Awake()
     {
         Instance = this;
- 
-        CreateLevel();
-        SpawnNode = GetNodeFromWorldPosition(SpawnTransform.position);
-        SpawnPosition = GetWorldPositionFromNode(SpawnNode);
+        ChangeGameState(GAME_STATE.INIT);
+               
     }
 
     private void Start()
     {
+        m_levelEditor = LevelEditor.Instance;
         m_lemmingsManager = LemmingsManager.Instance;
         m_uiManager = UIManager.Instance;
-        TargetAbility = ABILITY.UMBRELLA;
     }
+
+
+
+    public void Play(Texture2D _leveltexture)
+    {
+        LevelTexture = _leveltexture;
+        ChangeGameState(GAME_STATE.PLAY);
+        
+    }
+
+
 
     private void CreateLevel()
     {
@@ -97,24 +145,166 @@ public class GameManager : MonoBehaviour {
                 
             }
         }
-       
-        Rect rect = new Rect(0, 0, m_maxX, m_maxY);      
-        LevelRenderer.sprite = Sprite.Create(m_levelTextureInstance, rect, Vector2.zero);
 
+        GenerateLevelSprite(m_levelTextureInstance);
+
+    }
+
+    public void GenerateLevelSprite(Texture2D _leveltexture)
+    {       
+        Rect rect = new Rect(0, 0, _leveltexture.width, _leveltexture.height);
+        Debug.Log(_leveltexture.width + " " + _leveltexture.height);
+        Sprite sprite = Sprite.Create(_leveltexture, rect, Vector2.zero, 100, 1, SpriteMeshType.Tight);
+   
+
+        LevelRenderer.sprite = sprite;
     }
 
     private void Update()
-    {
-        GetMousePosition();
-       // HandleMouseInput();
-        CheckForUnits();
-        m_uiManager.Tick();
-        ClearNodes();
-        HandleUnit();
-        m_lemmingsManager.Tick(Time.deltaTime);
+    {  
+
+        switch (GameState)
+        {
+            case GAME_STATE.EDIT:
+                
+                m_levelEditor.HandleMouseInput();
+                GetMousePosition();
+                m_uiManager.Tick();
+                break;
+            case GAME_STATE.PLAY:
+                GetMousePosition();
+                m_uiManager.Tick();
+                CheckForUnits();
+                HandleUnit();
+                HandleFillNodes();
+                HandleClearNodes();
+                HandleBridgeNodes();
+                m_lemmingsManager.Tick(Time.deltaTime);
+                if (m_applyTexture)
+                {
+                    m_levelTextureInstance.Apply();
+                }
+                break;
+            case GAME_STATE.INIT:
+                GetMousePosition();
+                m_uiManager.Tick();
+                break;
+
+        } 
+        
+           
     }
 
-    private void ClearNodes()
+    public void ChangeGameState(GAME_STATE _gameState)
+    {
+        PlayCanvasObj.SetActive(false);
+        EditCanvasObj.SetActive(false);
+        InitCanvasObj.SetActive(false);
+
+        switch (_gameState)
+        {
+            case GAME_STATE.PLAY:
+                Debug.Log("play");
+                GameState = _gameState;
+                CreateLevel();
+                SpawnNode = GetNodeFromWorldPosition(SpawnTransform.position);
+                SpawnPosition = GetWorldPositionFromNode(SpawnNode);
+                PlayCanvasObj.SetActive(true);
+                break;
+            case GAME_STATE.INIT:
+                Debug.Log("init");
+                GameState = _gameState;
+                InitCanvasObj.SetActive(true);
+                break;
+            case GAME_STATE.EDIT:
+                Debug.Log("edit");
+                GameState = _gameState;
+                EditCanvasObj.SetActive(true);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void AddFillNode(FillNode _fillNode)
+    {
+        m_fillNodes.Add(_fillNode);
+        m_applyTexture = true;
+    }
+
+    private void HandleFillNodes()
+    {
+        m_fillTimer += Time.deltaTime;
+
+        if (m_fillTimer >= FillInterval)
+        {
+            m_fillTimer = 0f;
+        }
+        else
+            return;
+
+        if (m_fillNodes.Count == 0)
+            return;
+
+
+        for (int i = 0; i < m_fillNodes.Count; i++)
+        {
+            FillNode currentFillNode = m_fillNodes[i];
+            Node currentNode = GetNode(currentFillNode.x, currentFillNode.y);
+            Node downNode = GetNode(currentFillNode.x, currentFillNode.y - 1);
+
+          
+
+            if (downNode != null && downNode.isEmpty)
+            {
+                
+                //downNode.isEmpty = false;
+                m_levelTextureInstance.SetPixel(downNode.x, downNode.y, fillColor);
+                currentFillNode.y = downNode.y;
+                m_nodesToClear.Add(currentNode);
+            }
+            else
+            {
+                Node downForward = GetNode(currentFillNode.x + 1, currentNode.y - 1);
+
+
+                if (downForward != null && downForward.isEmpty)
+                {
+                    
+                    downForward.isEmpty = false;
+                    m_levelTextureInstance.SetPixel(downForward.x, downForward.y, fillColor);
+                    currentFillNode.y = downForward.y;
+                    currentFillNode.x = downForward.x;
+                    m_nodesToClear.Add(currentNode);
+                }
+                else
+                {
+                    Node backForward = GetNode(currentFillNode.x - 1, currentNode.y - 1);
+                    if (backForward != null && backForward.isEmpty)
+                    {
+ 
+
+                        backForward.isEmpty = false;
+                        m_levelTextureInstance.SetPixel(backForward.x, backForward.y, fillColor);
+                        currentFillNode.y = backForward.y;
+                        currentFillNode.x = backForward.x;
+                        m_nodesToClear.Add(currentNode);
+                    }
+                    else
+                    {
+                        currentFillNode.timesNotMoved++;
+                        GetNode(currentFillNode.x, currentFillNode.y).isEmpty = false;
+                        if(currentFillNode.timesNotMoved > 10)
+                        {
+                            m_fillNodes.Remove(currentFillNode);
+                        }
+                    }
+                }
+            }
+        }
+    }
+          
+    private void HandleClearNodes()
     {
         if (m_nodesToClear.Count == 0)
             return;
@@ -129,17 +319,43 @@ public class GameManager : MonoBehaviour {
         m_nodesToClear.Clear();
     }
 
+    private void HandleBridgeNodes()
+    {
+        if (m_nodesBridgeToAdd.Count == 0)
+            return;
+
+        for (int i = 0; i < m_nodesBridgeToAdd.Count; i++)
+        {         
+            m_levelTextureInstance.SetPixel(m_nodesBridgeToAdd[i].x, m_nodesBridgeToAdd[i].y, bridgeColor);
+        }
+        m_levelTextureInstance.Apply();
+        m_nodesToClear.Clear();
+    }
+
     public void AddNodesToClear(List<Node> _nodesToClear)
     {
         m_nodesToClear.AddRange(_nodesToClear);
     }
 
+    public void AddNodesToBridge(List<Node> _nodesToBridge, bool _movingLeft)
+    {
+        for (int i = 0; i < _nodesToBridge.Count; i++)
+        {
+            if (_movingLeft == true)
+                _nodesToBridge[i].isStoppedLeft = true;
+            else
+                _nodesToBridge[i].isStoppedRight = true;
+        }
+        m_nodesBridgeToAdd.AddRange(_nodesToBridge);
+    }
+
+   
+
     private void HandleUnit()
     {
         if (!m_uiManager.IsOverUnit)
             return;
-        if (TargetAbility == CurrentLemming.CurrentAbility)
-            return;
+       
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -161,35 +377,7 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    private void HandleMouseInput()
-    {
-        if (m_currentNode == null)
-            return;
-
-        if (Input.GetMouseButton(0))
-        {
-            
-            if (m_currentNode == m_prevNode)
-                return;
-
-            m_prevNode = m_currentNode;
-
-            for (int x = -6; x < 6; x++)
-            {
-                for (int y = -6; y < 6; y++)
-                {
-                    int nodeX = m_currentNode.x + x;
-                    int nodeY = m_currentNode.y + y;
-                    m_levelTextureInstance.SetPixel(nodeX, nodeY, emptyColor);
-                    Node node = GetNode(nodeX, nodeY);
-                    if (node == null)
-                        continue;
-                    node.isEmpty = true;
-                }
-            }
-            m_levelTextureInstance.Apply();
-        }
-    }
+   
 
     void GetMousePosition()
     {
@@ -201,23 +389,28 @@ public class GameManager : MonoBehaviour {
 
     public Node GetNode(int x, int y)
     {
-        if (x < 0 || y < 0 || x > m_maxX || y > m_maxY)
-            return null;
+        if (x < 0 || y < 0 || x > m_maxX - 1 || y > m_maxY - 1)
+        {
+
+            return null; 
+        }
+           
         return Grid[x, y];
     }
 
-    public Node GetNodeFromWorldPosition(Vector3 _position)
+    public Node GetNodeFromWorldPosition(Vector3 _position, bool _debug = false)
     {
-        int x = Mathf.RoundToInt(_position.x * pixelsPerUnit);
-        int y = Mathf.RoundToInt(_position.y * pixelsPerUnit);
+       
+        int x = Mathf.RoundToInt(_position.x / UnitPerPixel);
+        int y = Mathf.RoundToInt(_position.y / UnitPerPixel);   
 
         return GetNode(x, y);
     }
 
     public Vector3 GetWorldPositionFromNode(int _x, int _y)
     {
-        float x = _x / (float)pixelsPerUnit;
-        float y = _y / (float) pixelsPerUnit;
+        float x = _x * UnitPerPixel;
+        float y = _y * UnitPerPixel;
         return new Vector3(x, y, 0f);
     }
 
@@ -226,8 +419,8 @@ public class GameManager : MonoBehaviour {
         if (_node == null)
             return -Vector3.one;
 
-        float x = _node.x / (float)pixelsPerUnit;
-        float y = _node.y / (float)pixelsPerUnit;
+        float x = _node.x * UnitPerPixel;
+        float y = _node.y * UnitPerPixel;
         return new Vector3(x, y, 0f);
     }
 

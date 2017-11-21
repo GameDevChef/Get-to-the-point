@@ -33,18 +33,19 @@ public class LemmingsManager : MonoBehaviour {
 
     public void Update()
     {
-        if (m_currentLemmingsAmount >= MaxLemmingsCount)
-            return;
-
-        m_timer += Time.deltaTime;
-        if(m_timer > SpawnInterval)
-        {
-            SpawnLemming();
-        }
+      
     }
 
     public void Tick(float _delta)
     {
+        if (m_currentLemmingsAmount >= MaxLemmingsCount)
+            return;
+
+        m_timer += Time.deltaTime;
+        if (m_timer > SpawnInterval)
+        {
+            SpawnLemming();
+        }
         for (int i = 0; i < m_allLemmingsList.Count; i++)
         {
             m_allLemmingsList[i].Tick(_delta);

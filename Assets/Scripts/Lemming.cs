@@ -9,7 +9,10 @@ public enum ABILITY
     STOPPER,
     UMBRELLA,
     EXPLODE,
-    DIG_DOWN
+    DIG_DOWN,
+    DIG_FORWARD,
+    BUILD,
+    FILL
 }
 
 public class Lemming : MonoBehaviour {
@@ -19,6 +22,7 @@ public class Lemming : MonoBehaviour {
 
     Vector3 m_startingPosition;
     Vector3 m_targetPosition;
+
     bool m_lerp;
     float m_t;
     bool m_movingLeft;
@@ -26,10 +30,11 @@ public class Lemming : MonoBehaviour {
     bool m_prevOnGround;
     int m_framesInAir;
     bool m_isInitialized;
-
+    
     public float MaxStoppingTime;
     private float m_currentStoppingTime;
     private List<Node> m_stoppedNodesList = new List<Node>();
+    private List<FillNode> m_fillNodes = new List<FillNode>();
 
     public float TimeToExplode;
     private float m_currentTimeToExplode;
@@ -37,11 +42,23 @@ public class Lemming : MonoBehaviour {
     public float MaxDigDownTime;
     public int DigDownRadius;
     private float m_currentDigDownTime;
-   // private bool m_isDiggingDown;
+
+    public float MaxFillTime;
+    public float FillSpawnInterval;
+    private float m_currentFillTime;
+    private float m_currentSpawnFillTime;
+
+    private bool m_readyToDigForward;
+    public float MaxDigForwardTime;
+    public int DigForwardRadius;
+    private float m_currentDigForwardTime;
+
+    public float MaxBuildTime;
+    public int BuildLength;
+    private float m_currentBuildTime;
 
     private bool m_hasUmbrella;
      
-
     int m_targetX;
     int m_targetY;
 
@@ -55,8 +72,12 @@ public class Lemming : MonoBehaviour {
     public float UmbrellFallSpeedSpeedPrc;
     [Range(.01f, 1f)]
     public float DigDownSpeedPrc;
-    private float m_currentLerpSpeed;
+    [Range(.01f, 1f)]
+    public float DigForwardSpeedPrc;
+    [Range(.01f, 1f)]
+    public float BuildSpeedPrc;
 
+    private float m_currentLerpSpeed;
 
     public SpriteRenderer Renderer;
 
@@ -67,7 +88,7 @@ public class Lemming : MonoBehaviour {
     LemmingsManager lemmingsManager;
 
     public ABILITY CurrentAbility;
-
+   
     private void Awake()
     {
         m_anim = GetComponent<Animator>();      
@@ -108,6 +129,15 @@ public class Lemming : MonoBehaviour {
             case ABILITY.DIG_DOWN:
                 DigDown(_delta);
                 break;
+            case ABILITY.DIG_FORWARD:
+                DigForward(_delta);
+                break;
+            case ABILITY.BUILD:
+                Build(_delta);
+                break;
+            case ABILITY.FILL:
+                Fill(_delta);
+                break;
             default:
                 break;
         }
@@ -116,22 +146,80 @@ public class Lemming : MonoBehaviour {
         Renderer.flipX = m_movingLeft;
     }
 
+    private void Fill(float _delta)
+    {
+        if (m_currentFillTime > MaxFillTime)
+        {
+            ChangeAbility(ABILITY.WALKER);
+            m_fillNodes.Clear();
+            return;
+        }
+        
+                   
+        m_currentFillTime += _delta;
+
+        m_currentSpawnFillTime += _delta;
+
+        if (m_currentSpawnFillTime > FillSpawnInterval)
+        {
+            m_currentSpawnFillTime = 0f;
+
+            if (m_fillNodes.Count > 0)
+            {
+                if (m_fillNodes[m_fillNodes.Count - 1].timesNotMoved > 0)
+                {
+                    ChangeAbility(ABILITY.WALKER);
+                    m_fillNodes.Clear();
+                    return;
+                }
+
+            }
+
+            FillNode fillNode = new FillNode();
+
+            int x = (m_movingLeft) ? -1 : 1;
+
+            Node spawnNode = gameManager.GetNode(m_currentNode.x + x * 3, m_currentNode.y + 3);
+
+           
+
+            fillNode.x = spawnNode.x;
+            fillNode.y = spawnNode.y;
+
+            m_fillNodes.Add(fillNode);
+            gameManager.AddFillNode(fillNode);
+
+           
+
+
+        }
+    }
+
     public bool ChangeAbility(ABILITY _targetAbility)
     {
+        if (CurrentAbility != ABILITY.WALKER && _targetAbility != ABILITY.WALKER)
+            return false;
+        if (_targetAbility == CurrentAbility)
+            return false;
+
         m_hasUmbrella = false;
-        //m_isDiggingDown = false;
+        m_readyToDigForward = false;
 
         switch (_targetAbility)
         {
             case ABILITY.WALKER:
-                m_anim.Play("Walk");
+                m_anim.Play("Walk1");
                 CurrentAbility = _targetAbility;
+                m_currentLerpSpeed = m_onGround ? MaxLerpSpeed * WalkSpeedPrc : MaxLerpSpeed * FallSpeedPrc;
+              
                 return true;
+
             case ABILITY.EXPLODE:
                 m_currentTimeToExplode = 0f;
                 m_anim.Play("Explode");
                 CurrentAbility = _targetAbility;
                 return true;
+
             case ABILITY.UMBRELLA:
                 if (m_onGround)
                     return false;
@@ -139,10 +227,12 @@ public class Lemming : MonoBehaviour {
                 m_anim.Play("Umbrella");
                 CurrentAbility = _targetAbility;
                 return true;
+
             case ABILITY.STOPPER:
                 if (!m_prevOnGround)
                     return false;
-                m_anim.Play("Stop");
+
+                m_anim.Play("Stop1");
                 CurrentAbility = _targetAbility;
                 m_currentStoppingTime = 0f;
                 StopNodes();
@@ -152,9 +242,30 @@ public class Lemming : MonoBehaviour {
                 if (!m_prevOnGround)
                     return false;
                 m_anim.Play("Dig down");
-                //m_isDiggingDown = true;
                 CurrentAbility = _targetAbility;
                 m_currentDigDownTime = 0f;              
+                return true;
+
+            case ABILITY.DIG_FORWARD:
+                if (!m_prevOnGround)
+                    return false;
+                m_readyToDigForward = true;               
+                return true;
+
+            case ABILITY.BUILD:
+                if (!m_prevOnGround)
+                    return false;
+                m_anim.Play("Build");
+                CurrentAbility = _targetAbility;
+                m_currentBuildTime = 0f;
+                return true;
+
+            case ABILITY.FILL:
+                if (!m_prevOnGround)
+                    return false;
+                m_anim.Play("Fill");
+                CurrentAbility = _targetAbility;
+                m_currentBuildTime = 0f;
                 return true;
 
             default:
@@ -174,7 +285,7 @@ public class Lemming : MonoBehaviour {
                     continue;
                 if (node.isEmpty)
                     continue;
-                if(Vector3.Distance(gameManager.GetWorldPositionFromNode(_centerNode), gameManager.GetWorldPositionFromNode(node)) > _radius / gameManager.pixelsPerUnit)
+                if(Vector3.Distance(gameManager.GetWorldPositionFromNode(_centerNode), gameManager.GetWorldPositionFromNode(node)) > _radius * gameManager.UnitPerPixel)
                 {
                     continue;
                 }
@@ -187,12 +298,20 @@ public class Lemming : MonoBehaviour {
     private List<Node> FindNodes(int _minX, int _maxX, int _minY, int _maxY, int _radius)
     {
         List<Node> returnList = new List<Node>();
+
+        if(_maxX < _minX)
+        {
+            int temp = _maxX;
+            _maxX = _minX;
+            _minX = temp;
+        }
+
         for (int x = _minX; x < _maxX; x++)
         {
             for (int y = _minY; y < _maxY; y++)
             {
                 Node node = gameManager.GetNode(m_currentNode.x + x, m_currentNode.y + y);
-                if (Vector3.Distance(gameManager.GetWorldPositionFromNode(m_currentNode), gameManager.GetWorldPositionFromNode(node)) > _radius / gameManager.pixelsPerUnit)
+                if (Vector3.Distance(gameManager.GetWorldPositionFromNode(m_currentNode), gameManager.GetWorldPositionFromNode(node)) > _radius * gameManager.UnitPerPixel)
                 {
                     continue;
                 }
@@ -236,7 +355,7 @@ public class Lemming : MonoBehaviour {
 
             OnLerpEnd();
 
-            float distance = Vector3.Distance(m_startingPosition, m_targetPosition);
+            float distance = Vector3.Distance(m_startingPosition, m_targetPosition); 
             m_baseSpeed = m_currentLerpSpeed / distance;
             if (m_hasUmbrella)
                 m_baseSpeed /= 2f;
@@ -259,8 +378,10 @@ public class Lemming : MonoBehaviour {
     private void Stopper(float _delta)
     {
         m_currentStoppingTime += _delta;
-        if(m_currentStoppingTime >= MaxStoppingTime)
+
+        if (m_currentStoppingTime >= MaxStoppingTime || !CheckIfHasGround(2))
         {
+
             ChangeAbility(ABILITY.WALKER);
             EndStoppingNodes();
         }
@@ -276,7 +397,7 @@ public class Lemming : MonoBehaviour {
             return;
         }
 
-        if (!CheckIfHasGround(7))
+        if (!CheckIfHasGround(6))
         {
             ChangeAbility(ABILITY.WALKER);
             Debug.Log("no ground");
@@ -286,7 +407,7 @@ public class Lemming : MonoBehaviour {
 
         if (!m_lerp)
         {
-            gameManager.AddNodesToClear(FindNodes(m_currentNode, 5));
+            gameManager.AddNodesToClear(FindNodes(m_currentNode, DigDownRadius));
 
             Node nextDown = gameManager.GetNode(m_currentNode.x, m_currentNode.y - 1);
             if (nextDown.isEmpty)
@@ -308,9 +429,94 @@ public class Lemming : MonoBehaviour {
         }
     }
 
+    private void DigForward(float _delta)
+    {
+        m_currentDigForwardTime += Time.deltaTime;
+
+        if (m_currentDigForwardTime >= MaxDigForwardTime)
+        {
+            ChangeAbility(ABILITY.WALKER);
+            return;
+        }
+
+        if (!CheckIfHasGround(1))
+        {
+            ChangeAbility(ABILITY.WALKER);
+            return;
+        }
+
+
+        if (!m_lerp)
+        {
+            Node centerNode = gameManager.GetNode(m_currentNode.x, m_currentNode.y + DigForwardRadius - 1);
+
+            gameManager.AddNodesToClear(FindNodes(centerNode, DigForwardRadius));
+
+            int x = (m_movingLeft) ? -1 : 1; 
+
+            Node nextSide = gameManager.GetNode(m_currentNode.x + x, m_currentNode.y);
+            if (nextSide.isEmpty)
+                m_targetNode = nextSide;
+            else
+                m_targetNode = m_currentNode;
+
+            OnLerpEnd();
+            float distance = Vector3.Distance(m_startingPosition, m_targetPosition);
+
+            m_currentLerpSpeed = MaxLerpSpeed * DigForwardSpeedPrc;
+
+            m_baseSpeed = m_currentLerpSpeed / distance;
+
+        }
+        else
+        {
+            LerpToPosition(_delta);
+        }
+    }
+
+    private void Build(float _delta)
+    {
+        m_currentBuildTime += Time.deltaTime;
+
+        if (m_currentBuildTime >= MaxBuildTime)
+        {
+            ChangeAbility(ABILITY.WALKER);
+            return;
+        }
+
+        if (!m_lerp)
+        {
+            int x = (m_movingLeft) ? -1 : 1;
+
+            gameManager.AddNodesToBridge(FindNodes(-x , BuildLength * x, 0, 1, 10), m_movingLeft);
+
+            Node nextStep = gameManager.GetNode(m_currentNode.x + x, m_currentNode.y + 1);
+            if (nextStep.isEmpty)
+                m_targetNode = nextStep;
+            else
+            {
+                ChangeAbility(ABILITY.WALKER);
+                return;
+            }
+                
+
+            OnLerpEnd();
+            float distance = Vector3.Distance(m_startingPosition, m_targetPosition);
+
+            m_currentLerpSpeed = MaxLerpSpeed * BuildSpeedPrc;
+
+            m_baseSpeed = m_currentLerpSpeed / distance;
+
+        }
+        else
+        {
+            LerpToPosition(_delta);
+        }
+    }
+
     private bool CheckIfHasGround(int _height)
     {
-        for (int i = 1; i < _height; i++)
+        for (int i = 1; i <= _height; i++)
         {
             Node nextDown = gameManager.GetNode(m_currentNode.x, m_currentNode.y - i);
             if(nextDown == null)
@@ -329,21 +535,26 @@ public class Lemming : MonoBehaviour {
     {
         for (int i = 0; i < m_stoppedNodesList.Count; i++)
         {
-            m_stoppedNodesList[i].isStopped = false;
+            m_stoppedNodesList[i].isStoppedLeft = false;
+            m_stoppedNodesList[i].isStoppedRight = false;
         }
         m_stoppedNodesList.Clear();
     }
 
     private void StopNodes()
     {
-        for (int x = -4; x < 4; x++)
+        for (int x = 0; x < 1; x++)
         {
             for (int y = 0; y < 10; y++)
             {
                 Node node = gameManager.GetNode(m_currentNode.x + x, m_currentNode.y + y);
-                node.isStopped = true;
+                node.isStoppedLeft = true;
+                node.isStoppedRight = true;
                 m_stoppedNodesList.Add(node);
+
+
             }
+           
         }
     }
 
@@ -354,12 +565,13 @@ public class Lemming : MonoBehaviour {
         m_targetY = m_currentNode.y;
 
         bool isNextDownAir = CheckIfEmpty(m_targetX, m_targetY - 1);
-        if (isNextDownAir)
+
+        if (isNextDownAir) // can go down case
         {
             m_framesInAir++;
             if (m_onGround)
             {              
-                if (m_framesInAir >= 4)
+                if (m_framesInAir >= 4) // been on ground and falling more thern 4 frames
                 {
                     m_onGround = false;
                     if (m_hasUmbrella)
@@ -370,64 +582,75 @@ public class Lemming : MonoBehaviour {
 
                     else
                     {
-                        m_anim.Play("Fall");
+                        m_anim.Play("Fall1");
                         m_currentLerpSpeed = MaxLerpSpeed * FallSpeedPrc;
                     }
                         
                     
                 }
             }
-            
-            
-            
+
             m_targetY--;
         }
-        else
+        else // has ground under
         {
-            if(m_framesInAir >= 200 && !m_hasUmbrella)
+            if(m_framesInAir >= 200 && !m_hasUmbrella) // death case
             {
                 ChangeAbility(ABILITY.EXPLODE);
                 return;
             }
             m_framesInAir = 0;
             m_onGround = true;
-            if (!m_prevOnGround)
+            if (!m_prevOnGround) // first frame on ground
             {
                 if (m_hasUmbrella)
                 {
                     ChangeAbility(ABILITY.WALKER);
                 }
-                m_anim.Play("Walk");
+                m_anim.Play("Walk1");
                 m_currentLerpSpeed = MaxLerpSpeed * WalkSpeedPrc;
             }
                 
             int x = (m_movingLeft) ? -1 : 1;
-            bool isNexSideAir = CheckIfEmpty(m_targetX + x, m_targetY);
-            if (isNexSideAir)
+            bool isNextSideAir = CheckIfEmpty(m_targetX + x, m_targetY);
+            if (isNextSideAir) // can go sideways
             {
                 m_targetX += x;
             }
-            else
+            else // looking for a step
             {
                 bool canStep = false;
                 int stepHeight = 0;
                 for (int i = 1; i < 4; i++)
                 {
-                    bool isStepAir = CheckIfEmpty(m_targetX, m_targetY + i);
+                    if (i >= 1) // dig forward if can
+                    {
+                        if (m_readyToDigForward)
+                        {
+                            m_readyToDigForward = false;
+                            m_currentDigForwardTime = 0f;
+                            m_anim.Play("Dig forward");
+                            CurrentAbility = ABILITY.DIG_FORWARD;
+                            return;
+                        }
+                    }
+                    bool isStepAir = CheckIfEmpty(m_targetX + x, m_targetY + i);
                     if (isStepAir)
                     {
+                        
                         stepHeight = i;
                         canStep = true;
                         break;
                     }
                 }
-                if (canStep)
+                if (canStep) // step forward
                 {
+                    Debug.Log("step " + stepHeight);
                     m_targetY += stepHeight;
                     m_targetX += x;
 
                 }
-                else
+                else // turn around
                 {
                     m_movingLeft = !m_movingLeft;
                     
@@ -448,9 +671,20 @@ public class Lemming : MonoBehaviour {
         
         if (node.isEmpty)
         {
-            if (node.isStopped)
+            if (node.isStoppedLeft == true && m_movingLeft == true)
+            {
+                Debug.Log("stopped l");
                 return false;
+            }
+                
+            if (node.isStoppedRight == true && m_movingLeft == false)
+            {
+                Debug.Log("stopped r");
+                return false;
+            }
             return true;
+            
+               
         }                  
         return false;
     }

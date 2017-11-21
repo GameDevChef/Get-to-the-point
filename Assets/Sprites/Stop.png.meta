@@ -1,16 +1,11 @@
 fileFormatVersion: 2
-guid: a2eeb5ffcc819c641ae8422d931d2500
-timeCreated: 1510824480
+guid: 5e7767f8aebc21c479ec614156a1d109
+timeCreated: 1510852089
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: bridge_0
-    21300002: bridge_1
-    21300004: bridge_2
-    21300006: bridge_3
-    21300008: bridge_4
-    21300010: bridge_5
-    21300012: bridge_6
+    21300000: Stop_0
+    21300002: Stop_1
   externalObjects: {}
   serializedVersion: 4
   mipmaps:
@@ -53,7 +48,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 200
   alphaUsage: 1
   alphaIsTransparency: 1
   spriteTessellationDetail: -1
@@ -103,97 +98,27 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: bridge_0
+      name: Stop_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 32
+        width: 32
+        height: 32
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Stop_1
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 10
-        height: 10
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: bridge_1
-      rect:
-        serializedVersion: 2
-        x: 10
-        y: 0
-        width: 10
-        height: 10
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: bridge_2
-      rect:
-        serializedVersion: 2
-        x: 20
-        y: 0
-        width: 10
-        height: 10
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: bridge_3
-      rect:
-        serializedVersion: 2
-        x: 30
-        y: 0
-        width: 10
-        height: 10
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: bridge_4
-      rect:
-        serializedVersion: 2
-        x: 40
-        y: 0
-        width: 10
-        height: 10
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: bridge_5
-      rect:
-        serializedVersion: 2
-        x: 50
-        y: 0
-        width: 10
-        height: 10
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-    - serializedVersion: 2
-      name: bridge_6
-      rect:
-        serializedVersion: 2
-        x: 60
-        y: 0
-        width: 10
-        height: 10
+        width: 32
+        height: 32
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
