@@ -11,7 +11,7 @@ public class UIButton : MonoBehaviour {
 
     public ABILITY ability;
 
-    public Image image;
+    public Image m_Image;
 
     private void Start()
     {
@@ -33,13 +33,43 @@ public class UIButton : MonoBehaviour {
     {
         if(m_levelEditor.Leveltexture == null)
         {
-            Debug.Log("no level selected");
+            m_gameManager.Play(m_levelEditor.DefaultTexture);
         }
         else
         {
             m_gameManager.Play(m_levelEditor.Leveltexture);
         }
     }
+
+    public void ChangeColor()
+    {
+   
+        
+        LevelEditor.Instance.ChangeColor(m_Image.color);
+        
+    }
+
+    public void SetSpawn()
+    {
+        LevelEditor.Instance.StartSettingSpawn();
+    }
+
+    public void SetExit()
+    {
+        LevelEditor.Instance.StartSettingExit();
+    }
+
+    public void OpenLoadPopup(bool _state)
+    {
+        LevelEditor.Instance.OpenLoadPopup(_state);
+    }
+
+    public void LoadFromWeb()
+    {
+        LevelEditor.Instance.LoadFromWeb();
+    }
+
+
 
     
 }

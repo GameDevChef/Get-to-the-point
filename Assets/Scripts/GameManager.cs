@@ -54,6 +54,9 @@ public class GameManager : MonoBehaviour {
 
     public Transform SpawnTransform;
     public Vector3 SpawnPosition;
+
+    public Transform ExitTransform;
+
     public Node SpawnNode;
 
     public Lemming CurrentLemming;
@@ -62,7 +65,7 @@ public class GameManager : MonoBehaviour {
 
     private ABILITY TargetAbility;
 
-    private UIManager m_uiManager;
+    private UIManager m_UIManager;
 
     private List<Node> m_nodesToClear = new List<Node>();
 
@@ -93,6 +96,12 @@ public class GameManager : MonoBehaviour {
 
     public GameObject InitCanvasObj;
 
+    public Vector2 ExitVector;
+
+    public Vector2 SpawnVector;
+
+    int m_lemmingsExitCount;
+
     private void Awake()
     {
         Instance = this;
@@ -104,7 +113,7 @@ public class GameManager : MonoBehaviour {
     {
         m_levelEditor = LevelEditor.Instance;
         m_lemmingsManager = LemmingsManager.Instance;
-        m_uiManager = UIManager.Instance;
+        m_UIManager = UIManager.Instance;
     }
 
 
@@ -113,7 +122,8 @@ public class GameManager : MonoBehaviour {
     {
         LevelTexture = _leveltexture;
         ChangeGameState(GAME_STATE.PLAY);
-        
+        m_UIManager.ChangeCursorSprite(m_UIManager.EmptyCursorSprite);
+        Camera.main.GetComponent<CameraMovement>().SetCameraBounds(_leveltexture.width, _leveltexture.height);
     }
 
 
@@ -140,7 +150,7 @@ public class GameManager : MonoBehaviour {
                 node.y = y;
 
                 Color pixelColor = LevelTexture.GetPixel(x, y);
-                node.isEmpty = (pixelColor.a == 0f);
+                node.isEmpty = (pixelColor.a == 0f /*|| CheckIfInExitRange(node)*/);
                 Grid[x, y] = node;
                 
             }
@@ -154,10 +164,11 @@ public class GameManager : MonoBehaviour {
     {       
         Rect rect = new Rect(0, 0, _leveltexture.width, _leveltexture.height);
         Debug.Log(_leveltexture.width + " " + _leveltexture.height);
-        Sprite sprite = Sprite.Create(_leveltexture, rect, Vector2.zero, 100, 1, SpriteMeshType.Tight);
+        Sprite sprite = Sprite.Create(_leveltexture, rect, Vector2.zero, 100, 1, SpriteMeshType.FullRect);
    
 
         LevelRenderer.sprite = sprite;
+
     }
 
     private void Update()
@@ -169,11 +180,11 @@ public class GameManager : MonoBehaviour {
                 
                 m_levelEditor.HandleMouseInput();
                 GetMousePosition();
-                m_uiManager.Tick();
+                m_UIManager.Tick();
                 break;
             case GAME_STATE.PLAY:
                 GetMousePosition();
-                m_uiManager.Tick();
+                m_UIManager.Tick();
                 CheckForUnits();
                 HandleUnit();
                 HandleFillNodes();
@@ -187,7 +198,7 @@ public class GameManager : MonoBehaviour {
                 break;
             case GAME_STATE.INIT:
                 GetMousePosition();
-                m_uiManager.Tick();
+                m_UIManager.Tick();
                 break;
 
         } 
@@ -207,8 +218,8 @@ public class GameManager : MonoBehaviour {
                 Debug.Log("play");
                 GameState = _gameState;
                 CreateLevel();
-                SpawnNode = GetNodeFromWorldPosition(SpawnTransform.position);
-                SpawnPosition = GetWorldPositionFromNode(SpawnNode);
+                SetSpawnPositions();
+               
                 PlayCanvasObj.SetActive(true);
                 break;
             case GAME_STATE.INIT:
@@ -224,6 +235,45 @@ public class GameManager : MonoBehaviour {
             default:
                 break;
         }
+    }
+
+
+    public bool CheckIfInExitRange(Node _node)
+    {
+        if (_node == null)
+            return false;
+        if (_node.x < ExitVector.x + 22 && _node.x > ExitVector.x - 22 && _node.y < ExitVector.y + 10 && _node.y > ExitVector.y - 22)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private void SetSpawnPositions()
+    {
+        
+        if (LevelTexture == m_levelEditor.DefaultTexture)
+        {
+            SpawnNode = GetNodeFromWorldPosition(SpawnTransform.position);
+            SpawnPosition = GetWorldPositionFromNode(SpawnNode);
+            Node exit = GetNodeFromWorldPosition(ExitTransform.position);
+            ExitVector = new Vector2(exit.x, exit.y);
+            SpawnTransform.gameObject.SetActive(true);
+            ExitTransform.gameObject.SetActive(true);
+        }
+        else
+        {
+            SpawnNode = GetNode((int)SpawnVector.x, (int)SpawnVector.y);
+            SpawnPosition = GetWorldPositionFromNode(SpawnNode);
+            
+        }
+        
+    }
+
+   public void OnLemmingExit()
+    {
+        m_lemmingsExitCount++;
+        Debug.Log(m_lemmingsExitCount);
     }
 
     public void AddFillNode(FillNode _fillNode)
@@ -353,14 +403,14 @@ public class GameManager : MonoBehaviour {
 
     private void HandleUnit()
     {
-        if (!m_uiManager.IsOverUnit)
+        if (!m_UIManager.IsOverUnit)
             return;
        
 
         if (Input.GetMouseButtonDown(0))
         {
             bool canChange = CurrentLemming.ChangeAbility(TargetAbility);
-            m_uiManager.ChangeAbility(canChange);
+            m_UIManager.ChangeAbility(canChange);
         }
     }
 
@@ -369,11 +419,11 @@ public class GameManager : MonoBehaviour {
         CurrentLemming = m_lemmingsManager.GetClosestUnit();
         if (CurrentLemming == null)
         {
-            m_uiManager.IsOverUnit = false;
+            m_UIManager.IsOverUnit = false;
         }
         else
         {
-            m_uiManager.IsOverUnit = true;
+            m_UIManager.IsOverUnit = true;
         }
     }
 
@@ -428,10 +478,10 @@ public class GameManager : MonoBehaviour {
     {
         if(m_currentUIButton != null)
         {
-            m_currentUIButton.image.color = unpressedColor;
+            m_currentUIButton.m_Image.color = unpressedColor;
         }
         m_currentUIButton = _uiButton;
-        m_currentUIButton.image.color = presseColor;
+        m_currentUIButton.m_Image.color = presseColor;
         TargetAbility = _uiButton.ability;
 
     }

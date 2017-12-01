@@ -30,6 +30,7 @@ public class Lemming : MonoBehaviour {
     bool m_prevOnGround;
     int m_framesInAir;
     bool m_isInitialized;
+    bool m_hasExited;
     
     public float MaxStoppingTime;
     private float m_currentStoppingTime;
@@ -107,6 +108,8 @@ public class Lemming : MonoBehaviour {
 
     public void Tick(float _delta)
     {
+        if (m_hasExited)
+            return;
         if (m_currentNode == null)
             return;
         if (!m_isInitialized)
@@ -342,10 +345,19 @@ public class Lemming : MonoBehaviour {
             m_t = 1;
             m_lerp = false;
             m_currentNode = m_targetNode;
+            bool exited = gameManager.CheckIfInExitRange(m_currentNode);
+            if (exited)
+            {
+                gameObject.SetActive(false);
+                gameManager.OnLemmingExit();
+                m_hasExited = true;
+            }
+            
         }
         Vector3 targetPosition = Vector3.Lerp(m_startingPosition, m_targetPosition, m_t);
         transform.position = targetPosition;
     }
+
 
     private void Walker(float _delta)
     {
