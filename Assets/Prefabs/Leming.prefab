@@ -129,25 +129,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea03b885105c2e7498ac702b515dc2d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxStoppingTime: 10
-  TimeToExplode: 0.5
-  MaxDigDownTime: 10
-  DigDownRadius: 5
-  MaxFillTime: 10
-  FillSpawnInterval: 0.1
-  MaxDigForwardTime: 10
-  DigForwardRadius: 5
-  MaxBuildTime: 20
-  BuildLength: 5
-  MaxLerpSpeed: 1
-  FallSpeedPrc: 0.5
-  WalkSpeedPrc: 0.2
-  UmbrellFallSpeedSpeedPrc: 0.25
-  DigDownSpeedPrc: 0.1
-  DigForwardSpeedPrc: 0.1
-  BuildSpeedPrc: 0.02
-  Renderer: {fileID: 212470123493158466}
-  CurrentAbility: 0
+  m_renderer: {fileID: 212470123493158466}
+  m_maxMoveSpeed: 1
+  m_fallSpeedPrc: 0.5
+  m_walkSpeedPrc: 0.2
+  m_umbrellFallSpeedPrc: 0.25
+  m_digDownSpeedPrc: 0.1
+  m_digForwardSpeedPrc: 0.1
+  m_buildSpeedPrc: 0.02
+  m_maxStoppingSpeed: 10
+  m_maxBuildTime: 20
+  m_buildLength: 5
+  m_maxDigDowmTime: 10
+  m_digDownRadius: 5
+  m_maxDigForwardTime: 10
+  m_digForwardRadius: 5
+  m_timeToExplode: 0.5
+  m_maxFillTime: 10
+  m_fillSpawnInterval: 0.1
 --- !u!212 &212470123493158466
 SpriteRenderer:
   m_ObjectHideFlags: 1

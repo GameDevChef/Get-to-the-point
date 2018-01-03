@@ -15,66 +15,79 @@ public class LevelEditor : MonoBehaviour {
 
     public static LevelEditor Instance;
 
-    private GameManager m_gameManager;
+    [Header("References")]
 
-    private UIManager m_UIManager;
+    [SerializeField]
+    public GameObject m_loadWWWPopup;
 
-    public GameObject m_LoadPopup;
+    [SerializeField]
+    InputField m_wwwAdress;
 
-    public InputField m_wwwAdress;
+    [SerializeField]
+    Sprite m_spawnSprite;
 
-    public EDIT_STATE editState;
+    [SerializeField]
+    Sprite m_exitSprite;
 
-    public Texture2D Leveltexture;
+    [HideInInspector]
+    public Texture2D m_LevelTexture;
 
-    public Texture2D DefaultTexture;
+    GameManager m_gameManager;
 
-    public Color EditColor;
+    UIManager m_UIManager;
 
-    public Sprite SpawnSprite;
+    EDIT_STATE m_editState;
+
+    Color m_editColor;
+
+    int m_editRadius;
+
+    bool m_hasSpawn;
+
+    bool m_hasExit;
+
+    int m_currentPixelX;
+
+    int m_currentPixelY;
 
 
-    public Sprite ExitSprite;
-
-    bool hasSpawn;
-
-    bool hasExit;
-
-    private int m_currentPixelX;
-
-    private int m_currentPixelY;
-
-
-    private void Awake()
+    void Awake()
     {
         Instance = this;
     }
 
-    private void Start()
+    void Start()
     {
-        editState = EDIT_STATE.PAINT;
+        m_editState = EDIT_STATE.PAINT;
         m_gameManager = GameManager.Instance;
         m_UIManager = UIManager.Instance;
         
     }
 
-    public void SaveLevel()
+    public void ChangeColor(Color _color)
     {
-
-    }
-
-    internal void ChangeColor(Color color)
-    {
-        if(editState != EDIT_STATE.PAINT)
+        if(m_editState != EDIT_STATE.PAINT)
         {
             ChangeEditState(EDIT_STATE.PAINT);
         }
-        EditColor = color;
+        m_editColor = _color;
     }
 
-    public void LoadLevel()
+    public void ChangeBrushSize(int _brushSize)
     {
+        m_editRadius = _brushSize;
+    }
 
+    public void LoadLevel(LevelSave _save)
+    {
+        m_LevelTexture = new Texture2D(0, 0, TextureFormat.RGBA32, false, false);
+        m_LevelTexture.filterMode = FilterMode.Point;
+        m_LevelTexture.wrapMode = TextureWrapMode.Clamp;
+        m_LevelTexture.LoadImage(_save.levelTextureBytes);
+
+        GameManager.Instance.m_SpawnVector = new Vector2(_save.SpawnPosX, _save.SpawnPosY);
+        GameManager.Instance.m_ExitVector = new Vector2(_save.ExitPosX, _save.ExitPosY);
+        GameManager.Instance.GenerateLevelSprite(m_LevelTexture);
     }
 
     public void NewLevel(Texture2D _texture = null)
@@ -82,12 +95,11 @@ public class LevelEditor : MonoBehaviour {
         m_gameManager.ChangeGameState(GAME_STATE.EDIT);
         int width = (_texture == null) ? 1000 : _texture.width;
         int height = (_texture == null) ? 400 : _texture.height;
-        Leveltexture = new Texture2D(width, height, TextureFormat.RGBA32, false, false);
-        Leveltexture.filterMode = FilterMode.Point;
-        Leveltexture.wrapMode = TextureWrapMode.Clamp;
+        m_LevelTexture = new Texture2D(width, height, TextureFormat.RGBA32, false, false);
+        m_LevelTexture.filterMode = FilterMode.Point;
+        m_LevelTexture.wrapMode = TextureWrapMode.Clamp;
 
         Color c = new Color(0, 0, 0, 0);
-
         
         for (int x = 0; x < width; x++)
         {
@@ -97,16 +109,16 @@ public class LevelEditor : MonoBehaviour {
                 {
                     c = _texture.GetPixel(x, y);
                 }
-                Leveltexture.SetPixel(x, y, c);
+                m_LevelTexture.SetPixel(x, y, c);
             }
         }
                    
-        m_gameManager.GenerateLevelSprite(Leveltexture);
-        Leveltexture.Apply();
+        m_gameManager.GenerateLevelSprite(m_LevelTexture);
+        m_LevelTexture.Apply();
         Camera.main.GetComponent<CameraMovement>().SetCameraBounds(width, height);
     }
 
-    internal void LoadFromWeb()
+    public void LoadFromWeb()
     {
         if (string.IsNullOrEmpty(m_wwwAdress.text))
             return;
@@ -114,9 +126,8 @@ public class LevelEditor : MonoBehaviour {
         StartCoroutine(LoadFromWebCO());
     }
 
-    private IEnumerator LoadFromWebCO()
-    {
-        
+    IEnumerator LoadFromWebCO()
+    {        
         WWW www = new WWW(m_wwwAdress.text);
 
         yield return www;
@@ -124,57 +135,54 @@ public class LevelEditor : MonoBehaviour {
         if(www.texture == null)
         {
             Debug.Log("no texture");
-            
-            
+                       
         }
         else
         {
             Texture2D texture = www.texture;
-
             NewLevel(www.texture);
         }
     }
 
     public void OpenLoadPopup(bool _state)
     {
-        Debug.Log(_state);
-        m_LoadPopup.SetActive(_state);
+        m_loadWWWPopup.SetActive(_state);
     }
 
     public void HandleMouseInput()
     {
-        switch (editState)
+        if (m_UIManager.IsOverUI)
+            return;
+        switch (m_editState)
         {
             case EDIT_STATE.PAINT:
                 Paint();
                 break;
             case EDIT_STATE.SET_SPAWN:
-                SetSpawnPosition(SpawnSprite);
+                SetSpawnPosition(m_spawnSprite);
                 break;
             case EDIT_STATE.SET_EXIT:
-                SetSpawnPosition(ExitSprite);
+                SetSpawnPosition(m_exitSprite);
                 break;
             default:
                 break;
         }
-
-
     }
 
     void ChangeEditState(EDIT_STATE _targetStete)
     {
-        editState = _targetStete;
+        m_editState = _targetStete;
 
         switch (_targetStete)
         {
             case EDIT_STATE.PAINT:
-                m_UIManager.ChangeCursorSprite(m_UIManager.EmptyCursorSprite);
+                m_UIManager.ChangeCursorSprite(m_UIManager.m_EmptyCursorSprite);
                 break;
             case EDIT_STATE.SET_SPAWN:
-                m_UIManager.ChangeCursorSprite(SpawnSprite);
+                m_UIManager.ChangeCursorSprite(m_spawnSprite);
                 break;
             case EDIT_STATE.SET_EXIT:
-                m_UIManager.ChangeCursorSprite(ExitSprite);
+                m_UIManager.ChangeCursorSprite(m_exitSprite);
                 break;
             default:
                 break;
@@ -185,36 +193,42 @@ public class LevelEditor : MonoBehaviour {
     {
         if (Input.GetMouseButton(0))
         {
+            int lastCurrentX = m_currentPixelX;
+            int lastCurrentY = m_currentPixelY;
+            GetPixelFromWorldPosition(m_gameManager.m_MousePosition);
+            if (lastCurrentX == m_currentPixelX && lastCurrentY == m_currentPixelY)
+                return;
+            
+            Vector3 center = m_gameManager.GetWorldPositionFromNode(m_currentPixelX, m_currentPixelY);
 
-            GetPixelFromWorldPosition(m_gameManager.MousePosition);
-
-
-            for (int x = -6; x < 6; x++)
+            for (int x = -m_editRadius; x <= m_editRadius; x++)
             {
-                for (int y = -6; y < 6; y++)
+                for (int y = -m_editRadius; y <= m_editRadius; y++)
                 {
                     int pixelX = m_currentPixelX + x;
                     int pixelY = m_currentPixelY + y;
-                    Leveltexture.SetPixel(pixelX, pixelY, EditColor);
+                    Vector3 current = m_gameManager.GetWorldPositionFromNode(pixelX, pixelY);
+                    float distance = Vector3.Distance(center, current);
+                    if (distance / m_gameManager.UnitPerPixel > m_editRadius)
+                        continue;
+                    m_LevelTexture.SetPixel(pixelX, pixelY, m_editColor);
                 }
             }
-            Leveltexture.Apply();
+            m_LevelTexture.Apply();
         }
     }
 
     void SetSpawnPosition(Sprite sprite)
     {
-        if (sprite == ExitSprite && hasExit)
+        if (sprite == m_exitSprite && m_hasExit)
             return;
 
-        if (sprite == SpawnSprite && hasSpawn)
+        if (sprite == m_spawnSprite && m_hasSpawn)
             return;
 
         if (Input.GetMouseButton(0))
         {
-            GetPixelFromWorldPosition(m_gameManager.MousePosition);
-            Debug.Log(m_currentPixelX + " " + m_currentPixelY);
-
+            GetPixelFromWorldPosition(m_gameManager.m_MousePosition);
 
             if (m_currentPixelX < 10 || m_currentPixelX > 490 || m_currentPixelY < 10 || m_currentPixelY > 190)
                 return;
@@ -233,42 +247,37 @@ public class LevelEditor : MonoBehaviour {
                     Color color = texture.GetPixel(x + halfWidth, y + halfHeight);
                     if (color.a > 0)
                     {
-                        Leveltexture.SetPixel(pixelX, pixelY, color);
+                        m_LevelTexture.SetPixel(pixelX, pixelY, color);
                        
                     }
-
                 }
             }
-            Leveltexture.Apply();  
 
-            if(sprite == ExitSprite)
+            m_LevelTexture.Apply();  
+
+            if(sprite == m_exitSprite)
             {
-                hasExit = true;
-                m_gameManager.ExitVector = new Vector2(m_currentPixelX, m_currentPixelY);
+                m_hasExit = true;
+                m_gameManager.m_ExitVector = new Vector2(m_currentPixelX, m_currentPixelY);
             }
 
-            if (sprite == SpawnSprite)
+            if (sprite == m_spawnSprite)
             {
-                hasSpawn = true;
-                m_gameManager.SpawnVector = new Vector2(m_currentPixelX, m_currentPixelY);
+                m_hasSpawn = true;
+                m_gameManager.m_SpawnVector = new Vector2(m_currentPixelX, m_currentPixelY);
             }
         }
-    }
-
-   
+    }   
 
     public void GetPixelFromWorldPosition(Vector3 _position)
-    {
-       
+    {       
         m_currentPixelX = Mathf.RoundToInt(_position.x / m_gameManager.UnitPerPixel);
         m_currentPixelY = Mathf.RoundToInt(_position.y / m_gameManager.UnitPerPixel);
-
     }
 
     public void StartSettingSpawn()
     {
         ChangeEditState(EDIT_STATE.SET_SPAWN);
-
     }
 
     public void StartSettingExit()

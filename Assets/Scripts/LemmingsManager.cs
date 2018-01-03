@@ -7,50 +7,53 @@ public class LemmingsManager : MonoBehaviour {
 
     public static LemmingsManager Instance;
 
-    public int MaxLemmingsCount;
+    [Header("References")]
+    [Space(10)]
+
+    [SerializeField]
+    public Lemming m_lemingPrefab;
+
+    GameManager gameManager;
+
+    List<Lemming> m_allLemmingsList = new List<Lemming>();
+
+    [Header("Variables")]
+    [Space(10)]
+
+    [SerializeField]
+    int m_maxLemingAmount;
+
+    [SerializeField]
+    float m_spawnInterval;
+
     int m_currentLemmingsAmount;
 
-    public float SpawnInterval;
-    public Lemming LemmingPrefab;
     float m_timer;
 
-    private GameManager gameManager;
-
-    private List<Lemming> m_allLemmingsList = new List<Lemming>();
-
- 
-
-    private void Awake()
+    void Awake()
     {
         Instance = this;      
     }
 
-
-    private void Start()
+    void Start()
     {
         gameManager = GameManager.Instance;
     }
 
-    public void Update()
-    {
-      
-    }
-
     public void Tick(float _delta)
-    {
-        if (m_currentLemmingsAmount >= MaxLemmingsCount)
-            return;
-
+    {     
         m_timer += Time.deltaTime;
-        if (m_timer > SpawnInterval)
+        if (m_timer > m_spawnInterval)
         {
-            SpawnLemming();
+            if (m_currentLemmingsAmount < m_maxLemingAmount)
+            {
+                SpawnLemming();
+            }
         }
         for (int i = 0; i < m_allLemmingsList.Count; i++)
         {
             m_allLemmingsList[i].Tick(_delta);
-        }
- 
+        } 
     }
 
     public Lemming GetClosestUnit()
@@ -62,9 +65,8 @@ public class LemmingsManager : MonoBehaviour {
         float closestDistanceSqr = .1f *.1f; 
 
         for (int i = 0; i < m_allLemmingsList.Count; i++)
-        {
-            
-            float distanceSqr = Vector3.SqrMagnitude(gameManager.MousePosition - m_allLemmingsList[i].transform.position);
+        {           
+            float distanceSqr = Vector3.SqrMagnitude(gameManager.m_MousePosition - m_allLemmingsList[i].transform.position);
             
             if (distanceSqr < closestDistanceSqr)
             {
@@ -76,16 +78,16 @@ public class LemmingsManager : MonoBehaviour {
         return closestLemmingInRadius;
     }
 
-    private void SpawnLemming()
+    void SpawnLemming()
     {
-        Lemming lemmingInstance = Instantiate(LemmingPrefab, gameManager.SpawnPosition, Quaternion.identity);
+        Lemming lemmingInstance = Instantiate(m_lemingPrefab, gameManager.m_SpawnPosition, Quaternion.identity);
         lemmingInstance.Initialize();
         m_allLemmingsList.Add(lemmingInstance);
         m_currentLemmingsAmount++;
         m_timer = 0f;
     }
 
-    internal void RemoveLemming(Lemming _lemming)
+    public void RemoveLemming(Lemming _lemming)
     {
         m_allLemmingsList.Remove(_lemming);
     }

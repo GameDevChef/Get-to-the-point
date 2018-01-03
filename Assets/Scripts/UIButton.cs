@@ -3,73 +3,91 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum BUTTON_TYPE
+{
+    ABILITY,
+    BRUSH_SIZE,
+    BRUSH_COLOR
+}
+
 public class UIButton : MonoBehaviour {
 
-    private LevelEditor m_levelEditor;
+    LevelEditor m_levelEditor;
 
-    private GameManager m_gameManager;
+    GameManager m_gameManager;
+
+    [Header("Variables")]
+
+    public BUTTON_TYPE m_ButtonType;
 
     public ABILITY ability;
 
     public Image m_Image;
 
-    private void Start()
+    [SerializeField]
+    int BrushSize;
+
+    void Start()
     {
-        m_gameManager = GameManager.Instance;
         m_levelEditor = LevelEditor.Instance;
+        m_gameManager = GameManager.Instance;
     }
 
     public void Press()
     {
-        GameManager.Instance.ButtonPressed(this);
+        m_gameManager.ButtonPressed(this);
     }
 
     public void New()
     {
-        m_levelEditor.NewLevel();
+        m_levelEditor.NewLevel(m_levelEditor.m_LevelTexture);
     }
 
     public void Play()
     {
-        if(m_levelEditor.Leveltexture == null)
+        if(m_levelEditor.m_LevelTexture == null)
         {
-            m_gameManager.Play(m_levelEditor.DefaultTexture);
+            LevelSerializer.Instance.Load();
         }
-        else
         {
-            m_gameManager.Play(m_levelEditor.Leveltexture);
+            m_gameManager.Play(m_levelEditor.m_LevelTexture);
         }
     }
 
     public void ChangeColor()
     {
-   
-        
-        LevelEditor.Instance.ChangeColor(m_Image.color);
-        
+        GameManager.Instance.ButtonPressed(this);
+        LevelEditor.Instance.ChangeColor(GetComponent<Image>().color);       
+    }
+
+    public void ChangeBrushSize()
+    {
+        GameManager.Instance.ButtonPressed(this);
+        LevelEditor.Instance.ChangeBrushSize(BrushSize);
     }
 
     public void SetSpawn()
-    {
-        LevelEditor.Instance.StartSettingSpawn();
+    {       
+        m_levelEditor.StartSettingSpawn();
     }
 
     public void SetExit()
     {
-        LevelEditor.Instance.StartSettingExit();
+        m_levelEditor.StartSettingExit();
     }
 
     public void OpenLoadPopup(bool _state)
     {
-        LevelEditor.Instance.OpenLoadPopup(_state);
+        m_levelEditor.OpenLoadPopup(_state);
+    }
+
+    public void OpenSavePopup(bool _state)
+    {
+        LevelSerializer.Instance.OpenSavePopup(_state);
     }
 
     public void LoadFromWeb()
     {
-        LevelEditor.Instance.LoadFromWeb();
-    }
-
-
-
-    
+        m_levelEditor.LoadFromWeb();
+    }   
 }

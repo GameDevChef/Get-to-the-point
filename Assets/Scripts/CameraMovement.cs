@@ -4,24 +4,26 @@ using UnityEngine;
 
 public class CameraMovement : MonoBehaviour {
 
-    bool IsMouseMovement;
+    [SerializeField]
+    bool m_isMouseMovement;
 
     float m_cameraHalfWidth;
+
     float m_cameraHalfHeight;
 
-
     float minCamX = 2.4f;
+
     float minCamY = 0.64f;
+
     float maxCamX;
+
     float maxCamY;
 
     bool boundsSet;
 
-    private void Start()
+    void Start()
     {       
-        m_cameraHalfWidth = (float)Screen.width / (float)Screen.height  * Camera.main.orthographicSize;
-        Debug.Log(Screen.width / Screen.height);
-     
+        m_cameraHalfWidth = (float)Screen.width / (float)Screen.height  * Camera.main.orthographicSize;    
         m_cameraHalfHeight = Camera.main.orthographicSize;
     }
 
@@ -36,16 +38,14 @@ public class CameraMovement : MonoBehaviour {
         boundsSet = true;
     }
 
-    private void Update()
-    {
-        
-
+    void Update()
+    {     
         if (!boundsSet)
             return;
 
         Vector3 move = Vector3.zero;
 
-        if (!IsMouseMovement)
+        if (!m_isMouseMovement)
         {
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
@@ -61,10 +61,7 @@ public class CameraMovement : MonoBehaviour {
             transform.position = move;
             return;
         }
-
-
-       
-
+      
         if (UIManager.Instance.IsOverUI)
             return;
 
@@ -87,14 +84,7 @@ public class CameraMovement : MonoBehaviour {
         {
             move = Vector3.right;
         }
-
-      
-
-        transform.position += move * Time.deltaTime;
-
-      
-
-        
-        
+    
+        transform.position += move * Time.deltaTime;                     
     }
 }

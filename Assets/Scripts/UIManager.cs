@@ -9,32 +9,44 @@ public class UIManager : MonoBehaviour {
 
     public static UIManager Instance;
 
-    public Sprite EmptyCursorSprite;
-    public Sprite ActiveCursorSprite;
+    [Header("References")]
+
+    public Sprite m_EmptyCursorSprite;
+
+    [SerializeField]
+    Sprite m_activeCursorSprite;
+
+    [SerializeField]
+    SpriteRenderer m_cursoRenderer;
+    
+    [SerializeField]
+    Transform m_cursorTransform;
+
+    LemmingsManager m_lemmingsManager;
+
+    GameManager m_gameManager;
 
     Sprite m_defaultSprite;
 
-    public SpriteRenderer CursorRenderer;
-    public Transform CursorTransform;
+    [Header("Variables")]
 
-    private LemmingsManager m_lemmingsManager;
-    private GameManager m_gameManager;
-
+    [HideInInspector]
     public bool IsOverUnit;
 
+    [HideInInspector]
     public bool IsOverUI;
 
-    private void Awake()
+    void Awake()
     {
         Instance = this;
     }
 
-    private void Start()
+    void Start()
     {
         m_gameManager = GameManager.Instance;
         m_lemmingsManager = LemmingsManager.Instance;
         Cursor.visible = false;
-        m_defaultSprite = EmptyCursorSprite;
+        m_defaultSprite = m_EmptyCursorSprite;
     }
 
     public void Tick()
@@ -48,34 +60,34 @@ public class UIManager : MonoBehaviour {
         {
             Cursor.visible = false;
         }
-        CursorTransform.position = m_gameManager.MousePosition;
+        m_cursorTransform.position = m_gameManager.m_MousePosition;
         if (IsOverUnit)
         {
-            CursorRenderer.sprite = ActiveCursorSprite;
+            m_cursoRenderer.sprite = m_activeCursorSprite;
         }
         else
         {
-            CursorRenderer.sprite = m_defaultSprite;
+            m_cursoRenderer.sprite = m_defaultSprite;
         }
     }
 
-    internal void ChangeAbility(bool _canChange)
+    public void ChangeAbility(bool _canChange)
     {
         StartCoroutine(ChangeCursorColorCO(_canChange));
     }
 
-    private IEnumerator ChangeCursorColorCO(bool _canChange)
+    IEnumerator ChangeCursorColorCO(bool _canChange)
     {
         Color color = (_canChange) ? Color.green : Color.red;     
-        CursorRenderer.color = color;
+        m_cursoRenderer.color = color;
 
-        while(CursorRenderer.color != Color.white)
+        while(m_cursoRenderer.color != Color.white)
         {
-            CursorRenderer.color = Color.Lerp(CursorRenderer.color, Color.white, Time.deltaTime);
+            m_cursoRenderer.color = Color.Lerp(m_cursoRenderer.color, Color.white, Time.deltaTime);
             yield return null;
-            if(CursorRenderer.color.b >= .9f)
+            if(m_cursoRenderer.color.b >= .9f)
             {
-                CursorRenderer.color = Color.white;
+                m_cursoRenderer.color = Color.white;
             }        
         }
     }
