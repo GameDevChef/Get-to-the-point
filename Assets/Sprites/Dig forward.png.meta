@@ -1,11 +1,15 @@
 fileFormatVersion: 2
-guid: 5e7767f8aebc21c479ec614156a1d109
-timeCreated: 1516202725
+guid: c484dba1bc22b354c9343b11a301d552
+timeCreated: 1516204623
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: Stop_0
-    21300002: Stop_1
+    21300000: Dig forward_0
+    21300002: Dig forward_1
+    21300004: Dig forward_2
+    21300006: Dig forward_3
+    21300008: Dig forward_4
+    21300010: Dig forward_5
   externalObjects: {}
   serializedVersion: 4
   mipmaps:
@@ -102,7 +106,35 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Stop_0
+      name: Dig forward_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.067}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Dig forward_1
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.067}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Dig forward_2
       rect:
         serializedVersion: 2
         x: 0
@@ -116,10 +148,38 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: Stop_1
+      name: Dig forward_3
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.067}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Dig forward_4
       rect:
         serializedVersion: 2
         x: 0
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.067}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Dig forward_5
+      rect:
+        serializedVersion: 2
+        x: 32
         y: 0
         width: 32
         height: 32

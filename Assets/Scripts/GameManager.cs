@@ -85,6 +85,8 @@ public class GameManager : MonoBehaviour {
     [Header("Variables")]
     [Space(10)]
 
+    public  bool m_IsLevelLoaded;
+
     public float UnitPerPixel = 0.01f;
 
     [SerializeField]
@@ -92,6 +94,8 @@ public class GameManager : MonoBehaviour {
 
     [SerializeField]
     Color m_bridgeColor;
+
+    
 
     [SerializeField]
     Color m_sandColor;
@@ -131,6 +135,7 @@ public class GameManager : MonoBehaviour {
     int m_lemmingsExitCount;
 
     bool m_applyTexture;
+
 
     void Awake()
     {
@@ -504,5 +509,10 @@ public class GameManager : MonoBehaviour {
         if (m_GameState != GAME_STATE.PLAY || _pressedButton.m_ButtonType != BUTTON_TYPE.ABILITY)
             return;
         m_targetAbility = _pressedButton.ability;
+    }
+
+    public void BackToInit()
+    {
+        ChangeGameState(GAME_STATE.INIT);
     }
 }

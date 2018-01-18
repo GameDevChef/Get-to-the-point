@@ -1,11 +1,16 @@
 fileFormatVersion: 2
-guid: 5e7767f8aebc21c479ec614156a1d109
-timeCreated: 1516202725
+guid: 873ba169f3412d94bb758428b893b031
+timeCreated: 1516209618
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: Stop_0
-    21300002: Stop_1
+    21300000: Build_0
+    21300002: Build_1
+    21300004: Build_2
+    21300006: Build_3
+    21300008: Build_4
+    21300010: Build_5
+    21300012: Build_6
   externalObjects: {}
   serializedVersion: 4
   mipmaps:
@@ -102,7 +107,49 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Stop_0
+      name: Build_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.7, y: 0.07141495}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Build_1
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.7, y: 0.067}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Build_2
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.7, y: 0.067}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Build_3
       rect:
         serializedVersion: 2
         x: 0
@@ -110,13 +157,41 @@ TextureImporter:
         width: 32
         height: 32
       alignment: 9
-      pivot: {x: 0.5, y: 0.067}
+      pivot: {x: 0.7, y: 0.067}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: Stop_1
+      name: Build_4
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.7, y: 0.067}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Build_5
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.7, y: 0.067}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Build_6
       rect:
         serializedVersion: 2
         x: 0
@@ -124,7 +199,7 @@ TextureImporter:
         width: 32
         height: 32
       alignment: 9
-      pivot: {x: 0.5, y: 0.067}
+      pivot: {x: 0.7, y: 0.067}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []

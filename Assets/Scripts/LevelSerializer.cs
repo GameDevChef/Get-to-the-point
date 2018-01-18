@@ -98,6 +98,7 @@ public class LevelSerializer : MonoBehaviour {
     {
         if (m_selectedLevelSave == null)
             return;
+        
         LevelEditor.Instance.LoadLevel(m_selectedLevelSave);
     }
 

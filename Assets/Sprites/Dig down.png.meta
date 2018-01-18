@@ -1,11 +1,15 @@
 fileFormatVersion: 2
-guid: 5e7767f8aebc21c479ec614156a1d109
-timeCreated: 1516202725
+guid: 88521d14d13993b47b4c4b63517286c4
+timeCreated: 1516202751
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: Stop_0
-    21300002: Stop_1
+    21300000: Dig down_0
+    21300002: Dig down_1
+    21300004: Dig down_2
+    21300006: Dig down_3
+    21300008: Dig down_4
+    21300010: Dig down_5
   externalObjects: {}
   serializedVersion: 4
   mipmaps:
@@ -102,7 +106,35 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Stop_0
+      name: Dig down_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.067}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Dig down_1
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 64
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.067}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Dig down_2
       rect:
         serializedVersion: 2
         x: 0
@@ -116,10 +148,38 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: Stop_1
+      name: Dig down_3
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 32
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.067}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Dig down_4
       rect:
         serializedVersion: 2
         x: 0
+        y: 0
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.067}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Dig down_5
+      rect:
+        serializedVersion: 2
+        x: 32
         y: 0
         width: 32
         height: 32

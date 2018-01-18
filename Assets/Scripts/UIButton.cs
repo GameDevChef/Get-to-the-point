@@ -40,6 +40,11 @@ public class UIButton : MonoBehaviour {
 
     public void New()
     {
+        m_levelEditor.NewLevel();
+    }
+
+    public void Edit()
+    {
         m_levelEditor.NewLevel(m_levelEditor.m_LevelTexture);
     }
 
@@ -74,6 +79,11 @@ public class UIButton : MonoBehaviour {
     public void SetExit()
     {
         m_levelEditor.StartSettingExit();
+    }
+
+    public void BackToInit()
+    {
+        GameManager.Instance.BackToInit();
     }
 
     public void OpenLoadPopup(bool _state)

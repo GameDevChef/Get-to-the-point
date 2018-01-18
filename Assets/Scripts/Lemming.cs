@@ -289,7 +289,6 @@ public class Lemming : MonoBehaviour {
             case ABILITY.STOPPER:
                 if (!m_prevOnGround)
                     return false;
-                Debug.Log("stop");
                 m_anim.Play("Stop1");
                 m_currentAbility = _targetAbility;
                 m_currentStoppingTime = 0f;
@@ -299,7 +298,7 @@ public class Lemming : MonoBehaviour {
             case ABILITY.DIG_DOWN:
                 if (!m_prevOnGround)
                     return false;
-                m_anim.Play("Dig down");
+                m_anim.Play("Dig down1");
                 m_currentAbility = _targetAbility;
                 m_currentDigDownTime = 0f;              
                 return true;
@@ -313,7 +312,7 @@ public class Lemming : MonoBehaviour {
             case ABILITY.BUILD:
                 if (!m_prevOnGround)
                     return false;
-                m_anim.Play("Build");
+                m_anim.Play("Build1");
                 m_currentAbility = _targetAbility;
                 m_currentBuildTime = 0f;
                 return true;
@@ -321,7 +320,7 @@ public class Lemming : MonoBehaviour {
             case ABILITY.FILL:
                 if (!m_prevOnGround)
                     return false;
-                m_anim.Play("Fill");
+                m_anim.Play("Fill1");
                 m_currentAbility = _targetAbility;
                 m_currentBuildTime = 0f;
                 return true;
@@ -462,6 +461,7 @@ public class Lemming : MonoBehaviour {
 
         if (!CheckIfHasGround(6))
         {
+            Debug.Log("walker");
             ChangeAbility(ABILITY.WALKER);
             return;
         }
@@ -499,8 +499,9 @@ public class Lemming : MonoBehaviour {
             return;
         }
 
-        if (!CheckIfHasGround(1))
+        if (!CheckIfHasGround(3))
         {
+            Debug.Log("walk");
             ChangeAbility(ABILITY.WALKER);
             return;
         }
@@ -578,12 +579,12 @@ public class Lemming : MonoBehaviour {
         for (int i = 1; i <= _height; i++)
         {
             Node nextDown = m_gamemanager.GetNode(m_currentNode.x, m_currentNode.y - i);
-            if (CheckIfEmpty(nextDown.x, nextDown.y))
+            if (nextDown != null && !CheckIfEmpty(nextDown.x, nextDown.y))
             {
-                return false;
+                return true;
             }       
         }
-        return true;
+        return false;
     }
 
     void EndStoppingNodes()
@@ -678,7 +679,7 @@ public class Lemming : MonoBehaviour {
                         {
                             m_readyToDigForward = false;
                             m_currentDigForwardTime = 0f;
-                            m_anim.Play("Dig forward");
+                            m_anim.Play("Dig forward1");
                             m_currentAbility = ABILITY.DIG_FORWARD;
                             return;
                         }

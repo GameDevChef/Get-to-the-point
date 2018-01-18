@@ -24,6 +24,9 @@ public class LevelEditor : MonoBehaviour {
     InputField m_wwwAdress;
 
     [SerializeField]
+    GameObject EditButton;
+
+    [SerializeField]
     Sprite m_spawnSprite;
 
     [SerializeField]
@@ -80,6 +83,8 @@ public class LevelEditor : MonoBehaviour {
 
     public void LoadLevel(LevelSave _save)
     {
+        GameManager.Instance.m_IsLevelLoaded = true;
+        EditButton.SetActive(true);
         m_LevelTexture = new Texture2D(0, 0, TextureFormat.RGBA32, false, false);
         m_LevelTexture.filterMode = FilterMode.Point;
         m_LevelTexture.wrapMode = TextureWrapMode.Clamp;
@@ -92,6 +97,12 @@ public class LevelEditor : MonoBehaviour {
 
     public void NewLevel(Texture2D _texture = null)
     {
+        if(_texture == null)
+        {
+            GameManager.Instance.m_IsLevelLoaded = false;
+            EditButton.SetActive(false);
+        }
+
         m_gameManager.ChangeGameState(GAME_STATE.EDIT);
         int width = (_texture == null) ? 1000 : _texture.width;
         int height = (_texture == null) ? 400 : _texture.height;
